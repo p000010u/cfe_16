@@ -162,7 +162,7 @@ public class SendSingleEventIT {
                   }
                 }
                 {
-                  "time": 1791298774.326,
+                  "time": 1791298774.3269,
                   "source": "testi-event3",
                   "event": {
                     "stream": "TEST_STREAM3",
@@ -175,7 +175,7 @@ public class SendSingleEventIT {
                   }
                 }
                 {
-                  "time": 1791298994.32759,
+                  "time": 1791298774.32759,
                   "source": "testi-event4",
                   "event": {
                     "stream": "TEST_STREAM4",
@@ -188,10 +188,6 @@ public class SendSingleEventIT {
                   }
                 }
                 """;
-        String expected1 = "<14>1 2026-10-08T16:31:46.357Z cfe-16 capsulated - - [CFE-16-metadata@48577 authentication_token=\"AUTH_TOKEN_11111\" channel=\"CHANNEL_11111\" ack_id=\"0\" time_source=\"generated\" time_parsed=\"false\" time=\"1791477106349\" generated=\"true\"][cfe_16-origin@48577] {\"stream\":\"TEST_STREAM1\",\"time\":\"2026-10-06T14:59:34.125899443Z\",\"log\":{\"timestamp\":\"2026-10-06T14:59:34.125Z\",\"message\":\"{\\\"appName\\\":\\\"APP1\\\"}\"},\"host\":\"testi.1.lan\"}\n";
-        String expected2 = "<14>1 2026-10-08T16:31:46.358Z cfe-16 capsulated - - [CFE-16-metadata@48577 authentication_token=\"AUTH_TOKEN_11111\" channel=\"CHANNEL_11111\" ack_id=\"0\" time_source=\"generated\" time_parsed=\"false\" time=\"1791298774326\" generated=\"true\"][cfe_16-origin@48577] {\"stream\":\"TEST_STREAM2\",\"time\":\"2026-10-06T14:59:34.125899443Z\",\"log\":{\"timestamp\":\"2026-10-06T14:59:34.125Z\",\"message\":\"{\\\"appName\\\":\\\"APP2\\\"}\"},\"host\":\"testi.2.lan\"}\n";
-        String expected3 = "<14>1 2026-10-08T16:31:46.358Z cfe-16 capsulated - - [CFE-16-metadata@48577 authentication_token=\"AUTH_TOKEN_11111\" channel=\"CHANNEL_11111\" ack_id=\"0\" time_source=\"generated\" time_parsed=\"false\" time=\"1791298774326\" generated=\"true\"][cfe_16-origin@48577] {\"stream\":\"TEST_STREAM3\",\"time\":\"2026-10-06T14:59:34.125899443Z\",\"log\":{\"timestamp\":\"2026-10-06T14:59:34.125Z\",\"message\":\"{\\\"appName\\\":\\\"APP1\\\"}\"},\"host\":\"testi.3.lan\"}\n";
-        String expected4 = "<14>1 2026-10-08T16:31:46.358Z cfe-16 capsulated - - [CFE-16-metadata@48577 authentication_token=\"AUTH_TOKEN_11111\" channel=\"CHANNEL_11111\" ack_id=\"0\" time_source=\"generated\" time_parsed=\"false\" time=\"1791298994328\" generated=\"true\"][cfe_16-origin@48577] {\"stream\":\"TEST_STREAM4\",\"time\":\"2026-10-06T14:59:34.125899443Z\",\"log\":{\"timestamp\":\"2026-10-06T14:59:34.125Z\",\"message\":\"{\\\"appName\\\":\\\"APP4\\\"}\"},\"host\":\"testi.4.lan\"}\n";
         final Response supposedResponse = new AcknowledgedJsonResponse("Success", 0);
         Assertions
                 .assertEquals(supposedResponse, service.sendEvents(request1, channel1, eventJson), "Service should return JSON object with fields 'text', 'code' and 'ackID' (ackID " + "should be " + 0 + ")");
@@ -209,8 +205,14 @@ public class SendSingleEventIT {
         System.out.println(event3);
         System.out.println(event4);
 
-        Assertions.assertTrue(event1.contains("TEST_STREAM1"), "expected1 should match event1");
-        Assertions.assertTrue(event1.contains("TEST_STREAM1"), "expected1 should match event1");
+        Assertions.assertTrue(event1.contains("TEST_STREAM1"), "expected1 stream should match event1");
+        Assertions.assertTrue(event2.contains("TEST_STREAM2"), "expected2 stream should match event2");
+        Assertions.assertTrue(event3.contains("TEST_STREAM3"), "expected3 stream should match event3");
+        Assertions.assertTrue(event4.contains("TEST_STREAM4"), "expected4 stream should match event4");
 
+        Assertions.assertTrue(event1.contains("time=\"1791298774325\""), "expected1 time should match event1");
+        Assertions.assertTrue(event2.contains("time=\"1791298774326\""), "expected2 time should match event2");
+        Assertions.assertTrue(event3.contains("time=\"1791298774327\""), "expected3 time should match event3");
+        Assertions.assertTrue(event4.contains("time=\"1791298774328\""), "expected4 time should match event4");
     }
 }
