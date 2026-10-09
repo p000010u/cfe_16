@@ -50,6 +50,8 @@ import com.teragrep.cfe_16.response.Response;
 import com.teragrep.cfe_16.server.TestServer;
 import com.teragrep.cfe_16.server.TestServerFactory;
 import com.teragrep.cfe_16.service.HECService;
+
+import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
 import org.junit.jupiter.api.AfterAll;
@@ -128,5 +130,87 @@ public class SendSingleEventIT {
 
         Assertions
                 .assertEquals(2, messageList.size(), "Number of events received should match the number of sent ones");
+    }
+
+    @Test
+    public void sendNDJSONEventTest() {
+        String eventJson = """
+                {
+                  "time": "1791298774.324591",
+                  "source": "testi-event1",
+                  "event": {
+                    "stream": "TEST_STREAM1",
+                    "time": "2026-10-06T14:59:34.125899443Z",
+                    "log": {
+                      "timestamp": "2026-10-06T14:59:34.125Z",
+                      "message": "{\\"appName\\":\\"APP1\\"}"
+                    },
+                    "host": "testi.1.lan"
+                  }
+                }
+                {
+                  "time": 1791298774.325591,
+                  "source": "testi-event2",
+                  "event": {
+                    "stream": "TEST_STREAM2",
+                    "time": "2026-10-06T14:59:34.125899443Z",
+                    "log": {
+                      "timestamp": "2026-10-06T14:59:34.125Z",
+                      "message": "{\\"appName\\":\\"APP2\\"}"
+                    },
+                    "host": "testi.2.lan"
+                  }
+                }
+                {
+                  "time": 1791298774.326,
+                  "source": "testi-event3",
+                  "event": {
+                    "stream": "TEST_STREAM3",
+                    "time": "2026-10-06T14:59:34.125899443Z",
+                    "log": {
+                      "timestamp": "2026-10-06T14:59:34.125Z",
+                      "message": "{\\"appName\\":\\"APP1\\"}"
+                    },
+                    "host": "testi.3.lan"
+                  }
+                }
+                {
+                  "time": 1791298994.32759,
+                  "source": "testi-event4",
+                  "event": {
+                    "stream": "TEST_STREAM4",
+                    "time": "2026-10-06T14:59:34.125899443Z",
+                    "log": {
+                      "timestamp": "2026-10-06T14:59:34.125Z",
+                      "message": "{\\"appName\\":\\"APP4\\"}"
+                    },
+                    "host": "testi.4.lan"
+                  }
+                }
+                """;
+        String expected1 = "<14>1 2026-10-08T16:31:46.357Z cfe-16 capsulated - - [CFE-16-metadata@48577 authentication_token=\"AUTH_TOKEN_11111\" channel=\"CHANNEL_11111\" ack_id=\"0\" time_source=\"generated\" time_parsed=\"false\" time=\"1791477106349\" generated=\"true\"][cfe_16-origin@48577] {\"stream\":\"TEST_STREAM1\",\"time\":\"2026-10-06T14:59:34.125899443Z\",\"log\":{\"timestamp\":\"2026-10-06T14:59:34.125Z\",\"message\":\"{\\\"appName\\\":\\\"APP1\\\"}\"},\"host\":\"testi.1.lan\"}\n";
+        String expected2 = "<14>1 2026-10-08T16:31:46.358Z cfe-16 capsulated - - [CFE-16-metadata@48577 authentication_token=\"AUTH_TOKEN_11111\" channel=\"CHANNEL_11111\" ack_id=\"0\" time_source=\"generated\" time_parsed=\"false\" time=\"1791298774326\" generated=\"true\"][cfe_16-origin@48577] {\"stream\":\"TEST_STREAM2\",\"time\":\"2026-10-06T14:59:34.125899443Z\",\"log\":{\"timestamp\":\"2026-10-06T14:59:34.125Z\",\"message\":\"{\\\"appName\\\":\\\"APP2\\\"}\"},\"host\":\"testi.2.lan\"}\n";
+        String expected3 = "<14>1 2026-10-08T16:31:46.358Z cfe-16 capsulated - - [CFE-16-metadata@48577 authentication_token=\"AUTH_TOKEN_11111\" channel=\"CHANNEL_11111\" ack_id=\"0\" time_source=\"generated\" time_parsed=\"false\" time=\"1791298774326\" generated=\"true\"][cfe_16-origin@48577] {\"stream\":\"TEST_STREAM3\",\"time\":\"2026-10-06T14:59:34.125899443Z\",\"log\":{\"timestamp\":\"2026-10-06T14:59:34.125Z\",\"message\":\"{\\\"appName\\\":\\\"APP1\\\"}\"},\"host\":\"testi.3.lan\"}\n";
+        String expected4 = "<14>1 2026-10-08T16:31:46.358Z cfe-16 capsulated - - [CFE-16-metadata@48577 authentication_token=\"AUTH_TOKEN_11111\" channel=\"CHANNEL_11111\" ack_id=\"0\" time_source=\"generated\" time_parsed=\"false\" time=\"1791298994328\" generated=\"true\"][cfe_16-origin@48577] {\"stream\":\"TEST_STREAM4\",\"time\":\"2026-10-06T14:59:34.125899443Z\",\"log\":{\"timestamp\":\"2026-10-06T14:59:34.125Z\",\"message\":\"{\\\"appName\\\":\\\"APP4\\\"}\"},\"host\":\"testi.4.lan\"}\n";
+        final Response supposedResponse = new AcknowledgedJsonResponse("Success", 0);
+        Assertions
+                .assertEquals(supposedResponse, service.sendEvents(request1, channel1, eventJson), "Service should return JSON object with fields 'text', 'code' and 'ackID' (ackID " + "should be " + 0 + ")");
+
+        Assertions
+                .assertEquals(4, messageList.size(), "Number of events received should match the number of sent ones");
+
+        String event1 = new String(messageList.pop(), StandardCharsets.UTF_8);
+        String event2 = new String(messageList.pop(), StandardCharsets.UTF_8);
+        String event3 = new String(messageList.pop(), StandardCharsets.UTF_8);
+        String event4 = new String(messageList.pop(), StandardCharsets.UTF_8);
+
+        System.out.println(event1);
+        System.out.println(event2);
+        System.out.println(event3);
+        System.out.println(event4);
+
+        Assertions.assertTrue(event1.contains("TEST_STREAM1"), "expected1 should match event1");
+        Assertions.assertTrue(event1.contains("TEST_STREAM1"), "expected1 should match event1");
+
     }
 }

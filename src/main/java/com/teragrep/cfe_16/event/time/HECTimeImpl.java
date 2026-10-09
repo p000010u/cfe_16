@@ -87,22 +87,28 @@ public final class HECTimeImpl implements HECTime {
             returnedTime = this.removeDecimal(timeNode.asDouble());
 
         }
+        // Time is a String
+        else if (timeNode.isString()) {
+            // Time is a decimal
+            if (timeNode.toString().contains(".")) {
+                returnedTime = removeDecimal(timeNode.asDouble());
+            }
+            // Try to convert the String to a long (if not convertable, default to 0L)
+            else {
+                final long tryAsLong = timeNode.asLong(0L);
+                if (tryAsLong != 0L) {
+                    returnedTime = tryAsLong;
+                }
+                // No time found in current or previous event
+                else {
+                    // Use default value
+                    returnedTime = defaultValue;
+                }
+            }
+        }
         // Time is a number, no calculations required
         else if (timeNode.canConvertToLong()) {
             returnedTime = timeNode.asLong();
-        }
-        // Time is a String
-        else if (timeNode.isString()) {
-            // Try to convert the String to a long (if not convertable, default to 0L)
-            final long tryAsLong = timeNode.asLong(0L);
-            if (tryAsLong != 0L) {
-                returnedTime = tryAsLong;
-            }
-            // No time found in current or previous event
-            else {
-                // Use default value
-                returnedTime = defaultValue;
-            }
         }
         // Unknown format
         else {
@@ -118,8 +124,8 @@ public final class HECTimeImpl implements HECTime {
      * value.
      */
     private long removeDecimal(final double doubleValue) {
-        final BigDecimal doubleValueWithDecimal = BigDecimal.valueOf(doubleValue);
-        final String stringValue = doubleValueWithDecimal.toString();
+        final BigDecimal roundedDoubleValue = BigDecimal.valueOf(Math.round(doubleValue * 1000d) / 1000d);
+        final String stringValue = roundedDoubleValue.toString();
         final String stringValueWithoutDecimal = stringValue.replace(".", "");
 
         return Long.parseLong(stringValueWithoutDecimal);

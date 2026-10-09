@@ -127,6 +127,38 @@ class HECTimeImplTest {
     }
 
     @Test
+    @DisplayName("Time is reported and parsed when time is a double with six decimals of accuracy")
+    void timeIsReportedAndParsedWhenTimeIsADouble6() {
+        final ObjectMapper objectMapper = new ObjectMapper();
+
+        final String content = "1791298774.324591";
+
+        final JsonNode jsonNode = Assertions.assertDoesNotThrow(() -> objectMapper.readTree(content));
+        final long currentEpoch = Instant.now().toEpochMilli();
+
+        final HECTime HECTime = new HECTimeImpl(
+                new JsonEventImpl(new ObjectMapper().createObjectNode().set("time", jsonNode))
+        );
+        System.out.println(HECTime.instant(currentEpoch));
+        System.out.println(content);
+
+        Assertions
+                .assertAll(
+                        () -> Assertions
+                                .assertEquals(
+                                        "reported", HECTime.source(),
+                                        "Time source should be 'reported' when the time is specified in a request"
+                                ),
+                        () -> Assertions
+                                .assertTrue(
+                                        HECTime.isParsed(),
+                                        "timeParsed should be true when time is specified in a request"
+                                ),
+                        () -> Assertions.assertEquals(1791298774325L, HECTime.instant(currentEpoch), "Time should be converted to epoch milliseconds when it's provided in a request in " + "epoch seconds with decimals")
+                );
+    }
+
+    @Test
     @DisplayName("Time is reported and parsed when time is exactly 13 digits")
     void timeIsReportedAndParsedWhenTimeIsExactly13Digits() {
         final ObjectMapper objectMapper = new ObjectMapper();
