@@ -48,11 +48,11 @@ package com.teragrep.cfe_16.event.time;
 import tools.jackson.databind.JsonNode;
 import com.teragrep.cfe_16.event.JsonEvent;
 import com.teragrep.cfe_16.exceptionhandling.EventFieldException;
-import java.math.BigDecimal;
+import java.time.Instant;
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import tools.jackson.databind.node.StringNode;
+import tools.jackson.databind.ObjectMapper;
 
 public final class HECTimeImpl implements HECTime {
 
@@ -65,119 +65,103 @@ public final class HECTimeImpl implements HECTime {
 
     @Override
     public long instant(final long defaultValue) {
-        final long returnedTime;
-        JsonNode timeNode;
+        final String timeString = getTimeString(getTimeNode(defaultValue));
+        return parseString(timeString, defaultValue);
+    }
 
+    private JsonNode getTimeNode(final long defaultValue) {
+        JsonNode timeNode;
         try {
             timeNode = jsonEvent.asTimeJsonNode();
         }
-        catch (final EventFieldException e) {
+        catch (EventFieldException e) {
             LOGGER.info("Could not parse time from JSON, so using defaultValue provided <[{}]>", defaultValue);
-            timeNode = new StringNode("");
+            timeNode = new ObjectMapper().createObjectNode();
         }
+        return timeNode;
+    }
 
-        // No time provided in the event
-        // Use the unchecked timeNode.toString() method, since we're validating the returnValue from there
-        if (timeNode == null || timeNode.toString().isEmpty()) {
-            // Use default value
-            returnedTime = defaultValue;
+    private String getTimeString(final JsonNode timeNode) {
+        if (timeNode.isDouble()) {
+            return timeNode.asDecimal().toString();
         }
-        // Check if time is a double and convert to long
-        else if (timeNode.isDouble()) {
-            returnedTime = this.removeDecimal(timeNode.asDouble());
-
+        else if (timeNode.isInt()) {
+            return timeNode.toString();
         }
-        // Time is a String
-        else if (timeNode.isString()) {
-            // Time is a decimal
-            if (timeNode.toString().contains(".")) {
-                returnedTime = removeDecimal(timeNode.asDouble());
-            }
-            // Try to convert the String to a long (if not convertable, default to 0L)
-            else {
-                final long tryAsLong = timeNode.asLong(0L);
-                if (tryAsLong != 0L) {
-                    returnedTime = tryAsLong;
-                }
-                // No time found in current or previous event
-                else {
-                    // Use default value
-                    returnedTime = defaultValue;
-                }
-            }
+        else if (timeNode.isObject() || timeNode.isArray()) {
+            return "";
         }
-        // Time is a number, no calculations required
-        else if (timeNode.canConvertToLong()) {
-            returnedTime = timeNode.asLong();
-        }
-        // Unknown format
         else {
-            // Use default value
+            return timeNode.asString();
+        }
+    }
+
+    private long parseString(final String timeString, final long defaultValue) {
+        final long returnedTime;
+        if (timeString != null && !timeString.isEmpty()) {
+            final String[] parts = timeString.split("\\.");
+            final Instant instant;
+            final int secondsLen = parts[0].length();
+            if (parts.length == 2) {
+                final int adjustLen = parts[1].length();
+                if (adjustLen == 9) {
+                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]));
+                }
+                else if (adjustLen == 8) {
+                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 10);
+                }
+                else if (adjustLen == 7) {
+                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 1_00);
+                }
+                else if (adjustLen == 6) {
+                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 1_000);
+                }
+                else if (adjustLen == 5) {
+                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 10_000);
+                }
+                else if (adjustLen == 4) {
+                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 100_000);
+                }
+                else if (adjustLen == 3) {
+                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 1_000_000);
+                }
+                else if (adjustLen == 2) {
+                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 10_000_000);
+                }
+                else if (adjustLen == 1) {
+                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 100_000_000);
+                }
+                else {
+                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]));
+                }
+            }
+            else if (secondsLen == 10) {
+                instant = Instant.ofEpochSecond(Long.parseLong(parts[0]));
+            }
+            else if (secondsLen == 13) {
+                instant = Instant.ofEpochMilli(Long.parseLong(parts[0]));
+            }
+            else if (secondsLen == 16) {
+                instant = Instant.ofEpochMilli(Long.parseLong(parts[0]) / 1_000);
+            }
+            else if (secondsLen == 19) {
+                instant = Instant.ofEpochMilli(Long.parseLong(parts[0]) / 1_000_000);
+            }
+            else {
+                instant = Instant.ofEpochMilli(defaultValue);
+            }
+            returnedTime = instant.toEpochMilli();
+        }
+        else {
             returnedTime = defaultValue;
         }
 
         return returnedTime;
     }
 
-    /**
-     * Takes a double value as a parameter, removes the decimal point from that value and returns the number as a long
-     * value.
-     */
-    private long removeDecimal(final double doubleValue) {
-        final BigDecimal roundedDoubleValue = BigDecimal.valueOf(Math.round(doubleValue * 1000d) / 1000d);
-        final String stringValue = roundedDoubleValue.toString();
-        final String stringValueWithoutDecimal = stringValue.replace(".", "");
-
-        return Long.parseLong(stringValueWithoutDecimal);
-    }
-
     @Override
     public boolean isParsed() {
-        final boolean returnedParsed;
-        JsonNode timeNode;
-
-        try {
-            if (jsonEvent.hasTime()) {
-                timeNode = jsonEvent.asTimeJsonNode();
-            }
-            else {
-                timeNode = new StringNode("");
-            }
-        }
-        catch (final EventFieldException e) {
-            timeNode = new StringNode("");
-        }
-        // No time provided in the event
-        // Use the unchecked timeNode.toString() method, since we're validating the returnValue from there
-        if (timeNode == null || timeNode.toString().isEmpty()) {
-            returnedParsed = false;
-        }
-        // Check if time is a double and convert to long
-        else if (timeNode.isDouble()) {
-            returnedParsed = true;
-
-        }
-        // Time is a String
-        else if (timeNode.isString()) {
-            // Try to convert the String to a long (if not convertable, default to 0L)
-            final long tryAsLong = timeNode.asLong(0L);
-            if (tryAsLong != 0L) {
-                returnedParsed = true;
-            }
-            else {
-                returnedParsed = false;
-            }
-        }
-        // Time is a number, no calculations required
-        else if (timeNode.canConvertToLong()) {
-            returnedParsed = true;
-        }
-        // Unknown format
-        else {
-            returnedParsed = false;
-        }
-
-        return returnedParsed;
+        return instant(0L) != 0L;
     }
 
     @Override
@@ -186,6 +170,9 @@ public final class HECTimeImpl implements HECTime {
         final boolean isParsed = this.isParsed();
 
         if (isParsed) {
+            returnedSource = "reported";
+        }
+        else if (!getTimeString(getTimeNode(0L)).isEmpty()) {
             returnedSource = "reported";
         }
         else {

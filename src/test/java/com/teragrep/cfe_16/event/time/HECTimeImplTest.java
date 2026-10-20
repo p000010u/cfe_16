@@ -154,7 +154,7 @@ class HECTimeImplTest {
                                         HECTime.isParsed(),
                                         "timeParsed should be true when time is specified in a request"
                                 ),
-                        () -> Assertions.assertEquals(1791298774325L, HECTime.instant(currentEpoch), "Time should be converted to epoch milliseconds when it's provided in a request in " + "epoch seconds with decimals")
+                        () -> Assertions.assertEquals(1791298774324L, HECTime.instant(currentEpoch), "Time should be converted to epoch milliseconds when it's provided in a request in " + "epoch seconds with decimals")
                 );
     }
 
@@ -224,7 +224,7 @@ class HECTimeImplTest {
     void timeIsReportedAndParsedWithLessThan13Digits() {
         final ObjectMapper objectMapper = new ObjectMapper();
 
-        final String content = "143318";
+        final String content = "1433180000";
 
         final JsonNode jsonNode = Assertions.assertDoesNotThrow(() -> objectMapper.readTree(content));
 
@@ -248,7 +248,7 @@ class HECTimeImplTest {
                                         "timeParsed should be false when time is given as an integer with less than 10 "
                                                 + "digits"
                                 ),
-                        () -> Assertions.assertEquals(143318L, HECTime.instant(currentEpoch), "Time as long should be as provided in the request")
+                        () -> Assertions.assertEquals(1433180000000L, HECTime.instant(currentEpoch), "Time as long should be as provided in the request")
                 );
     }
 
@@ -257,7 +257,7 @@ class HECTimeImplTest {
     void timeIsReportedAndParsedWhenTimeIsLongerThan13Digits() {
         final ObjectMapper objectMapper = new ObjectMapper();
 
-        final String content = "14331882552523";
+        final String content = "1433188255252311";
 
         final JsonNode jsonNode = Assertions.assertDoesNotThrow(() -> objectMapper.readTree(content));
         final long currentEpoch = Instant.now().toEpochMilli();
@@ -280,7 +280,7 @@ class HECTimeImplTest {
                                         "timeParsed should be false when time is given as an integer with more than 13 "
                                                 + "digits"
                                 ),
-                        () -> Assertions.assertEquals(14331882552523L, HECTime.instant(currentEpoch), "Time should be as it's provided in a request.")
+                        () -> Assertions.assertEquals(1433188255252L, HECTime.instant(currentEpoch), "Time should be as it's provided in a request.")
                 );
     }
 
