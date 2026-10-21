@@ -74,7 +74,7 @@ public final class HECTimeImpl implements HECTime {
         try {
             timeNode = jsonEvent.asTimeJsonNode();
         }
-        catch (EventFieldException e) {
+        catch (final EventFieldException e) {
             LOGGER.info("Could not parse time from JSON, so using defaultValue provided <[{}]>", defaultValue);
             timeNode = new ObjectMapper().createObjectNode();
         }
