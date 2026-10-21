@@ -176,7 +176,7 @@ public final class HECTimeImpl implements HECTime {
             returnedSource = "reported";
         }
         else {
-            return "generated";
+            returnedSource = "generated";
         }
 
         return returnedSource;
