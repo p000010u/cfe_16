@@ -283,25 +283,15 @@ public class SendSingleEventIT {
         final Matcher matcher8 = pattern.matcher(event8);
         final Matcher matcher9 = pattern.matcher(event9);
 
-        System.out.println(event1);
-        System.out.println(event2);
-        System.out.println(event3);
-        System.out.println(event4);
-        System.out.println(event5);
-        System.out.println(event6);
-        System.out.println(event7);
-        System.out.println(event8);
-        System.out.println(event9);
-
         Assertions.assertTrue(event1.contains("TEST_STREAM1"), "expected1 stream should match event1");
         Assertions.assertTrue(event2.contains("TEST_STREAM2"), "expected2 stream should match event2");
         Assertions.assertTrue(event3.contains("TEST_STREAM3"), "expected3 stream should match event3");
         Assertions.assertTrue(event4.contains("TEST_STREAM4"), "expected4 stream should match event4");
         Assertions.assertTrue(event5.contains("TEST_STREAM5"), "expected5 stream should match event5");
-        Assertions.assertTrue(event6.contains("TEST_STREAM6"), "expected5 stream should match event6");
-        Assertions.assertTrue(event7.contains("TEST_STREAM7"), "expected5 stream should match event7");
-        Assertions.assertTrue(event8.contains("TEST_STREAM8"), "expected5 stream should match event8");
-        Assertions.assertTrue(event9.contains("TEST_STREAM9"), "expected5 stream should match event9");
+        Assertions.assertTrue(event6.contains("TEST_STREAM6"), "expected6 stream should match event6");
+        Assertions.assertTrue(event7.contains("TEST_STREAM7"), "expected7 stream should match event7");
+        Assertions.assertTrue(event8.contains("TEST_STREAM8"), "expected8 stream should match event8");
+        Assertions.assertTrue(event9.contains("TEST_STREAM9"), "expected9 stream should match event9");
 
         Assertions.assertTrue(matcher1.find());
         Assertions.assertEquals("1791298774324", matcher1.group("time"));
