@@ -102,7 +102,7 @@ class HECBatchTest {
                 .assertEquals(supposedResponse.authenticationToken(), response.get(0).authenticationToken(), "Authentication token was not the one expected");
         // Use different defaultValues for instant() methods, to ensure they're not the same if they use the defaultValue
         Assertions
-                .assertEquals(supposedResponse.time().instant(0L), response.get(0).time().instant(1L), "Time was not the one expected");
+                .assertEquals(supposedResponse.time().toEpochMilli(0L), response.get(0).time().toEpochMilli(1L), "Time was not the one expected");
     }
 
     @Test
@@ -139,7 +139,7 @@ class HECBatchTest {
                 .assertEquals(supposedResponse.authenticationToken(), response.get(0).authenticationToken(), "Authentication token was not the one expected");
         // Use different defaultValues for instant() methods, to ensure they're not the same if they use the defaultValue
         Assertions
-                .assertEquals(supposedResponse.time().instant(0L), response.get(0).time().instant(1L), "Time was not the one expected");
+                .assertEquals(supposedResponse.time().toEpochMilli(0L), response.get(0).time().toEpochMilli(1L), "Time was not the one expected");
     }
 
     @Test
@@ -220,7 +220,7 @@ class HECBatchTest {
                     );
             // Use different defaultValues for instant() methods, to ensure they're not the same if they use the defaultValue
             Assertions
-                    .assertEquals(expectedResponseFromIterator.time().instant(0L), returnedHECRecord.time().instant(1L), "Time was not the one expected");
+                    .assertEquals(expectedResponseFromIterator.time().toEpochMilli(0L), returnedHECRecord.time().toEpochMilli(1L), "Time was not the one expected");
             verifiedIterations++;
         }
         Assertions.assertEquals(3, verifiedIterations);
@@ -373,7 +373,7 @@ class HECBatchTest {
                 );
             // Use different defaultValues for instant() methods, to ensure they're not the same if they use the defaultValue
             Assertions
-                .assertEquals(expectedResponseFromIterator.time().instant(0L), returnedHECRecord.time().instant(1L), "Time was not the one expected");
+                .assertEquals(expectedResponseFromIterator.time().toEpochMilli(0L), returnedHECRecord.time().toEpochMilli(1L), "Time was not the one expected");
             verifiedIterations++;
         }
         Assertions.assertEquals(3, verifiedIterations);

@@ -45,10 +45,12 @@
  */
 package com.teragrep.cfe_16.event.time;
 
+import com.teragrep.cfe_16.event.time.candidates.HECTimestampCandidate;
+import com.teragrep.cfe_16.event.time.candidates.HECTimestampCandidateImpl;
 import tools.jackson.databind.JsonNode;
 import com.teragrep.cfe_16.event.JsonEvent;
 import com.teragrep.cfe_16.exceptionhandling.EventFieldException;
-import java.time.Instant;
+
 import java.util.Objects;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,12 +66,24 @@ public final class HECTimeImpl implements HECTime {
     }
 
     @Override
-    public long instant(final long defaultValue) {
-        final String timeString = getTimeString(getTimeNode(defaultValue));
-        return parseString(timeString, defaultValue);
+    public long toEpochMilli(final long defaultValue) {
+        final String timeString = timeString(timeNode(defaultValue));
+
+        final HECTimestampCandidate candidates = new HECTimestampCandidateImpl();
+        final Instantiable instantiable = candidates.toInstantiable(timeString);
+
+        final long returnedTime;
+        if (instantiable.isStub()) {
+            returnedTime = defaultValue;
+        }
+        else {
+            returnedTime = instantiable.toInstant().toEpochMilli();
+        }
+
+        return returnedTime;
     }
 
-    private JsonNode getTimeNode(final long defaultValue) {
+    private JsonNode timeNode(final long defaultValue) {
         JsonNode timeNode;
         try {
             timeNode = jsonEvent.asTimeJsonNode();
@@ -81,98 +95,33 @@ public final class HECTimeImpl implements HECTime {
         return timeNode;
     }
 
-    private String getTimeString(final JsonNode timeNode) {
+    private String timeString(final JsonNode timeNode) {
         if (timeNode.isDouble()) {
             return timeNode.asDecimal().toString();
-        }
-        else if (timeNode.isInt()) {
+        } else if (timeNode.isInt()) {
             return timeNode.toString();
-        }
-        else if (timeNode.isObject() || timeNode.isArray()) {
+        } else if (timeNode.isObject() || timeNode.isArray()) {
             return "";
-        }
-        else {
+        } else if (timeNode.isNull() || timeNode.asString().equals("null")) {
+            return "";
+        } else {
             return timeNode.asString();
         }
     }
 
-    private long parseString(final String timeString, final long defaultValue) {
-        final long returnedTime;
-        if (timeString != null && !timeString.isEmpty()) {
-            final String[] parts = timeString.split("\\.");
-            final Instant instant;
-            final int secondsLen = parts[0].length();
-            if (parts.length == 2) {
-                final int adjustLen = parts[1].length();
-                if (adjustLen == 9) {
-                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]));
-                }
-                else if (adjustLen == 8) {
-                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 10);
-                }
-                else if (adjustLen == 7) {
-                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 1_00);
-                }
-                else if (adjustLen == 6) {
-                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 1_000);
-                }
-                else if (adjustLen == 5) {
-                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 10_000);
-                }
-                else if (adjustLen == 4) {
-                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 100_000);
-                }
-                else if (adjustLen == 3) {
-                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 1_000_000);
-                }
-                else if (adjustLen == 2) {
-                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 10_000_000);
-                }
-                else if (adjustLen == 1) {
-                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]) * 100_000_000);
-                }
-                else {
-                    instant = Instant.ofEpochSecond(Long.parseLong(parts[0]), Long.parseLong(parts[1]));
-                }
-            }
-            else if (secondsLen == 10) {
-                instant = Instant.ofEpochSecond(Long.parseLong(parts[0]));
-            }
-            else if (secondsLen == 13) {
-                instant = Instant.ofEpochMilli(Long.parseLong(parts[0]));
-            }
-            else if (secondsLen == 16) {
-                instant = Instant.ofEpochMilli(Long.parseLong(parts[0]) / 1_000);
-            }
-            else if (secondsLen == 19) {
-                instant = Instant.ofEpochMilli(Long.parseLong(parts[0]) / 1_000_000);
-            }
-            else {
-                instant = Instant.ofEpochMilli(defaultValue);
-            }
-            returnedTime = instant.toEpochMilli();
-        }
-        else {
-            returnedTime = defaultValue;
-        }
-
-        return returnedTime;
-    }
-
     @Override
     public boolean isParsed() {
-        return instant(0L) != 0L;
+        return toEpochMilli(0L) != 0L;
     }
 
     @Override
     public String source() {
         final String returnedSource;
-        final boolean isParsed = this.isParsed();
 
-        if (isParsed) {
+        if (isParsed()) {
             returnedSource = "reported";
         }
-        else if (!getTimeString(getTimeNode(0L)).isEmpty()) {
+        else if (!timeString(timeNode(0L)).isEmpty()) {
             returnedSource = "reported";
         }
         else {

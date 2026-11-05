@@ -57,12 +57,31 @@ import org.junit.jupiter.api.Test;
 class HECTimeImplTest {
 
     @Test
+    @DisplayName("Time is parsed, ends in decimal point")
+    void timeIsParsedEndsInDecimalPoint() {
+        final ObjectMapper mapper = new ObjectMapper();
+        final HECTime HECTime = new HECTimeImpl(
+                new JsonEventImpl(mapper.createObjectNode().set("time", mapper.stringNode("1791298774.")))
+        );
+
+        Assertions
+                .assertEquals(
+                        "reported", HECTime.source(),
+                        "Time source should be 'reported' when it's specified in a request"
+                );
+        Assertions
+                .assertTrue(HECTime.isParsed(), "timeParsed should be true when time is specified in a request");
+        Assertions
+                .assertEquals(1791298774000L, HECTime.toEpochMilli(0L), "time should be same as in request");
+    }
+
+    @Test
     @DisplayName("Time is generated, not parsed and uses the defaultValue when time is an empty object")
     void timeIsGeneratedNotParsedAndUsesTheDefaultValueWhenTimeIsAnEmptyObject() {
         final long currentEpoch = Instant.now().toEpochMilli();
-
+        final ObjectMapper mapper = new ObjectMapper();
         final HECTime HECTime = new HECTimeImpl(
-                new JsonEventImpl(new ObjectMapper().createObjectNode().put("time", "{}"))
+                new JsonEventImpl(mapper.createObjectNode().set("time", mapper.createObjectNode()))
         );
 
         Assertions
@@ -73,7 +92,7 @@ class HECTimeImplTest {
         Assertions
                 .assertFalse(HECTime.isParsed(), "timeParsed should be false when time is not specified in a request");
         Assertions
-                .assertEquals(currentEpoch, HECTime.instant(currentEpoch), "Time as long should be the defaultValue provided when time is not specified in a request");
+                .assertEquals(currentEpoch, HECTime.toEpochMilli(currentEpoch), "Time as long should be the defaultValue provided when time is not specified in a request");
     }
 
     @Test
@@ -93,7 +112,7 @@ class HECTimeImplTest {
         Assertions
                 .assertFalse(HECTime.isParsed(), "timeParsed should be false when time is not specified in a request");
         Assertions
-                .assertEquals(currentEpoch, HECTime.instant(currentEpoch), "Time as long should be the defaultValue provided when time is not specified in a request");
+                .assertEquals(currentEpoch, HECTime.toEpochMilli(currentEpoch), "Time as long should be the defaultValue provided when time is not specified in a request");
     }
 
     @Test
@@ -122,7 +141,7 @@ class HECTimeImplTest {
                                         HECTime.isParsed(),
                                         "timeParsed should be true when time is specified in a request"
                                 ),
-                        () -> Assertions.assertEquals(1433188255253L, HECTime.instant(currentEpoch), "Time should be converted to epoch milliseconds when it's provided in a request in " + "epoch seconds with decimals")
+                        () -> Assertions.assertEquals(1433188255253L, HECTime.toEpochMilli(currentEpoch), "Time should be converted to epoch milliseconds when it's provided in a request in " + "epoch seconds with decimals")
                 );
     }
 
@@ -139,7 +158,7 @@ class HECTimeImplTest {
         final HECTime HECTime = new HECTimeImpl(
                 new JsonEventImpl(new ObjectMapper().createObjectNode().set("time", jsonNode))
         );
-        System.out.println(HECTime.instant(currentEpoch));
+        System.out.println(HECTime.toEpochMilli(currentEpoch));
         System.out.println(content);
 
         Assertions
@@ -154,7 +173,7 @@ class HECTimeImplTest {
                                         HECTime.isParsed(),
                                         "timeParsed should be true when time is specified in a request"
                                 ),
-                        () -> Assertions.assertEquals(1791298774324L, HECTime.instant(currentEpoch), "Time should be converted to epoch milliseconds when it's provided in a request in " + "epoch seconds with decimals")
+                        () -> Assertions.assertEquals(1791298774324L, HECTime.toEpochMilli(currentEpoch), "Time should be converted to epoch milliseconds when it's provided in a request in " + "epoch seconds with decimals")
                 );
     }
 
@@ -184,7 +203,7 @@ class HECTimeImplTest {
                                         HECTime.isParsed(),
                                         "timeParsed should be true when time is specified in a request"
                                 ),
-                        () -> Assertions.assertEquals(1433188255253L, HECTime.instant(currentEpoch), "Time should be converted to epoch milliseconds when it's provided in a request in " + "epoch seconds with decimals")
+                        () -> Assertions.assertEquals(1433188255253L, HECTime.toEpochMilli(currentEpoch), "Time should be converted to epoch milliseconds when it's provided in a request in " + "epoch seconds with decimals")
                 );
     }
 
@@ -215,7 +234,7 @@ class HECTimeImplTest {
                                         HECTime.isParsed(),
                                         "timeParsed should be false when time is given as a string in a request"
                                 ),
-                        () -> Assertions.assertEquals(1433188255253L, HECTime.instant(currentEpoch), "Time should be converted to long when time is given as a string in a request")
+                        () -> Assertions.assertEquals(1433188255253L, HECTime.toEpochMilli(currentEpoch), "Time should be converted to long when time is given as a string in a request")
                 );
     }
 
@@ -248,7 +267,7 @@ class HECTimeImplTest {
                                         "timeParsed should be false when time is given as an integer with less than 10 "
                                                 + "digits"
                                 ),
-                        () -> Assertions.assertEquals(1433180000000L, HECTime.instant(currentEpoch), "Time as long should be as provided in the request")
+                        () -> Assertions.assertEquals(1433180000000L, HECTime.toEpochMilli(currentEpoch), "Time as long should be as provided in the request")
                 );
     }
 
@@ -280,7 +299,7 @@ class HECTimeImplTest {
                                         "timeParsed should be false when time is given as an integer with more than 13 "
                                                 + "digits"
                                 ),
-                        () -> Assertions.assertEquals(1433188255252L, HECTime.instant(currentEpoch), "Time should be as it's provided in a request.")
+                        () -> Assertions.assertEquals(1433188255252L, HECTime.toEpochMilli(currentEpoch), "Time should be as it's provided in a request.")
                 );
     }
 
