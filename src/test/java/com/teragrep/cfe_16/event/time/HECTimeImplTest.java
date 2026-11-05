@@ -69,10 +69,8 @@ class HECTimeImplTest {
                         "reported", HECTime.source(),
                         "Time source should be 'reported' when it's specified in a request"
                 );
-        Assertions
-                .assertTrue(HECTime.isParsed(), "timeParsed should be true when time is specified in a request");
-        Assertions
-                .assertEquals(1791298774000L, HECTime.toEpochMilli(0L), "time should be same as in request");
+        Assertions.assertTrue(HECTime.isParsed(), "timeParsed should be true when time is specified in a request");
+        Assertions.assertEquals(1791298774000L, HECTime.toEpochMilli(0L), "time should be same as in request");
     }
 
     @Test

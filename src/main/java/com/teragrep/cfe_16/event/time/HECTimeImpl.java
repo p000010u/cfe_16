@@ -98,13 +98,17 @@ public final class HECTimeImpl implements HECTime {
     private String timeString(final JsonNode timeNode) {
         if (timeNode.isDouble()) {
             return timeNode.asDecimal().toString();
-        } else if (timeNode.isInt()) {
+        }
+        else if (timeNode.isInt()) {
             return timeNode.toString();
-        } else if (timeNode.isObject() || timeNode.isArray()) {
+        }
+        else if (timeNode.isObject() || timeNode.isArray()) {
             return "";
-        } else if (timeNode.isNull() || timeNode.asString().equals("null")) {
+        }
+        else if (timeNode.isNull() || timeNode.asString().equals("null")) {
             return "";
-        } else {
+        }
+        else {
             return timeNode.asString();
         }
     }
