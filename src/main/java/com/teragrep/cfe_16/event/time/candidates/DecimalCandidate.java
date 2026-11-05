@@ -68,10 +68,8 @@ public final class DecimalCandidate implements HECTimestampCandidate {
 
             if (diff < 0) {
                 instantiable = instantiableStub;
-                System.out.println("diff<0");
             }
             else {
-                System.out.println("diff>=0");
                 instantiable = new InstantiableImpl(
                         Long.parseLong(parts[0]),
                         Long.parseLong(parts[1]) * (long) Math.pow(10, diff)

@@ -69,11 +69,11 @@ public final class HECTimestampCandidateImpl implements HECTimestampCandidate {
             return instantiableStub;
         }
 
-        final List<Instantiable> successfulInstantiables = candidates.stream().map(candidate -> {
-            Instantiable c = candidate.toInstantiable(timestampString);
-            System.out.println(candidate + " " + c.isStub());
-            return c;
-        }).filter(instantiable -> !instantiable.isStub()).toList();
+        final List<Instantiable> successfulInstantiables = candidates
+                .stream()
+                .map(candidate -> candidate.toInstantiable(timestampString))
+                .filter(instantiable -> !instantiable.isStub())
+                .toList();
 
         if (successfulInstantiables.isEmpty()) {
             return instantiableStub;
