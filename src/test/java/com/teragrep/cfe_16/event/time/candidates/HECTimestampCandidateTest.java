@@ -52,6 +52,13 @@ import org.junit.jupiter.api.Test;
 public final class HECTimestampCandidateTest {
 
     @Test
+    void testInvalidInput() {
+        final HECTimestampCandidate candidates = new HECTimestampCandidateImpl();
+        final Instantiable i = candidates.toInstantiable("not a valid time");
+        Assertions.assertTrue(i.isStub());
+    }
+
+    @Test
     void test10Digits() {
         final HECTimestampCandidate candidates = new HECTimestampCandidateImpl();
         final Instantiable i = candidates.toInstantiable("1234567890");
