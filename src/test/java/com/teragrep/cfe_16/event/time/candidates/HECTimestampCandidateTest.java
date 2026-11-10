@@ -82,7 +82,7 @@ public final class HECTimestampCandidateTest {
         final Instantiable i = candidates.toInstantiable("1234567899999999");
         Assertions.assertFalse(i.isStub());
         Assertions.assertEquals(1234567899999L, i.toInstant().toEpochMilli());
-        Assertions.assertEquals(999000000, i.toInstant().getNano());
+        Assertions.assertEquals(999999000, i.toInstant().getNano());
     }
 
     @Test
@@ -91,7 +91,7 @@ public final class HECTimestampCandidateTest {
         final Instantiable i = candidates.toInstantiable("1234567899999999999");
         Assertions.assertFalse(i.isStub());
         Assertions.assertEquals(1234567899999L, i.toInstant().toEpochMilli());
-        Assertions.assertEquals(999000000, i.toInstant().getNano());
+        Assertions.assertEquals(999999999, i.toInstant().getNano());
     }
 
     @Test

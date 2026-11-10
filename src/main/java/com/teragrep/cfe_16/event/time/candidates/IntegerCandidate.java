@@ -49,6 +49,8 @@ import com.teragrep.cfe_16.event.time.Instantiable;
 import com.teragrep.cfe_16.event.time.InstantiableImpl;
 import com.teragrep.cfe_16.event.time.InstantiableStub;
 
+import java.util.concurrent.TimeUnit;
+
 public final class IntegerCandidate implements HECTimestampCandidate {
 
     private static final Instantiable instantiableStub = new InstantiableStub();
@@ -70,10 +72,15 @@ public final class IntegerCandidate implements HECTimestampCandidate {
                 instantiable = new InstantiableImpl(timestamp);
             }
             else if (len == 16) {
-                instantiable = new InstantiableImpl(timestamp / 1_000L);
+                final long seconds = TimeUnit.MICROSECONDS.toSeconds(timestamp);
+                final long nanosRemaining = TimeUnit.MICROSECONDS.toNanos(timestamp)
+                        - TimeUnit.SECONDS.toNanos(seconds);
+                instantiable = new InstantiableImpl(seconds, nanosRemaining);
             }
             else if (len == 19) {
-                instantiable = new InstantiableImpl(timestamp / 1_000_000L);
+                final long seconds = TimeUnit.NANOSECONDS.toSeconds(timestamp);
+                final long nanosRemaining = timestamp - TimeUnit.SECONDS.toNanos(seconds);
+                instantiable = new InstantiableImpl(seconds, nanosRemaining);
             }
             else {
                 instantiable = instantiableStub;
