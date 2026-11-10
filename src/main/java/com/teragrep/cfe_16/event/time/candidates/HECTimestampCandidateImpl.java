@@ -80,7 +80,7 @@ public final class HECTimestampCandidateImpl implements HECTimestampCandidate {
         }
 
         if (successfulInstantiables.size() > 1) {
-            throw new IllegalArgumentException(
+            throw new IllegalStateException(
                     "Multiple successful timestamp candidates found for timestamp string: <[" + timestampString + "]>"
             );
         }
