@@ -61,22 +61,15 @@ public final class DecimalCandidate implements HECTimestampCandidate {
     public Instantiable toInstantiable(final String timestampString) {
         final String[] parts = timestampString.split("\\.");
         final Instantiable instantiable;
-        if (parts.length == 2 && !parts[0].isEmpty() && !parts[1].isEmpty()) {
-
-            final int len = parts[1].length();
-            final int diff = 9 - len;
+        if (parts.length == 2 && !parts[0].isEmpty() && !parts[1].isEmpty() && (9 - parts[1].length()) >= 0) {
+            final int diff = 9 - parts[1].length();
 
             Instantiable mutableInstantiable;
             try {
-                if (diff < 0) {
-                    mutableInstantiable = instantiableStub;
-                }
-                else {
-                    mutableInstantiable = new InstantiableImpl(
-                            Long.parseLong(parts[0]),
-                            Long.parseLong(parts[1]) * (long) Math.pow(10, diff)
-                    );
-                }
+                mutableInstantiable = new InstantiableImpl(
+                        Long.parseLong(parts[0]),
+                        Long.parseLong(parts[1]) * (long) Math.pow(10, diff)
+                );
             }
             catch (final NumberFormatException e) {
                 mutableInstantiable = instantiableStub;
