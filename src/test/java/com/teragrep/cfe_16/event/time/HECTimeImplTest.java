@@ -156,8 +156,6 @@ class HECTimeImplTest {
         final HECTime HECTime = new HECTimeImpl(
                 new JsonEventImpl(new ObjectMapper().createObjectNode().set("time", jsonNode))
         );
-        System.out.println(HECTime.toEpochMilli(currentEpoch));
-        System.out.println(content);
 
         Assertions
                 .assertAll(
