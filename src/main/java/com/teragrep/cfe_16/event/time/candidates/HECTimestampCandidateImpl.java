@@ -48,6 +48,7 @@ package com.teragrep.cfe_16.event.time.candidates;
 import com.teragrep.cfe_16.event.time.Instantiable;
 import com.teragrep.cfe_16.event.time.InstantiableStub;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public final class HECTimestampCandidateImpl implements HECTimestampCandidate {
@@ -65,26 +66,32 @@ public final class HECTimestampCandidateImpl implements HECTimestampCandidate {
 
     @Override
     public Instantiable toInstantiable(final String timestampString) {
+        final Instantiable rv;
         if (timestampString == null || timestampString.isEmpty()) {
-            return instantiableStub;
+            rv = instantiableStub;
         }
+        else {
+            final List<Instantiable> successfulInstantiables = new ArrayList<>();
+            for (final HECTimestampCandidate candidate : candidates) {
+                final Instantiable instantiable = candidate.toInstantiable(timestampString);
+                if (!instantiable.isStub()) {
+                    successfulInstantiables.add(instantiable);
+                }
+            }
 
-        final List<Instantiable> successfulInstantiables = candidates
-                .stream()
-                .map(candidate -> candidate.toInstantiable(timestampString))
-                .filter(instantiable -> !instantiable.isStub())
-                .toList();
-
-        if (successfulInstantiables.isEmpty()) {
-            return instantiableStub;
+            if (successfulInstantiables.isEmpty()) {
+                rv = instantiableStub;
+            }
+            else if (successfulInstantiables.size() > 1) {
+                throw new IllegalStateException(
+                        "Multiple successful timestamp candidates found for timestamp string: <[" + timestampString
+                                + "]>"
+                );
+            }
+            else {
+                rv = successfulInstantiables.get(0);
+            }
         }
-
-        if (successfulInstantiables.size() > 1) {
-            throw new IllegalStateException(
-                    "Multiple successful timestamp candidates found for timestamp string: <[" + timestampString + "]>"
-            );
-        }
-
-        return successfulInstantiables.get(0);
+        return rv;
     }
 }
