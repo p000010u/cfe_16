@@ -77,9 +77,6 @@ public final class DecimalCandidate implements HECTimestampCandidate {
 
             instantiable = mutableInstantiable;
         }
-        else if (parts.length == 1 && timestampString.endsWith(".")) {
-            instantiable = new InstantiableImpl(Long.parseLong(parts[0]), 0);
-        }
         else {
             instantiable = instantiableStub;
         }
