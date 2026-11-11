@@ -49,12 +49,19 @@ import com.teragrep.cfe_16.event.time.Instantiable;
 import com.teragrep.cfe_16.event.time.InstantiableImpl;
 import com.teragrep.cfe_16.event.time.InstantiableStub;
 
+import java.math.BigInteger;
+
 public final class DecimalCandidate implements HECTimestampCandidate {
 
     private static final Instantiable instantiableStub = new InstantiableStub();
+    private final BigInteger numberTen;
 
     public DecimalCandidate() {
+        this(BigInteger.TEN);
+    }
 
+    private DecimalCandidate(final BigInteger numberTen) {
+        this.numberTen = numberTen;
     }
 
     @Override
@@ -68,10 +75,10 @@ public final class DecimalCandidate implements HECTimestampCandidate {
             try {
                 mutableInstantiable = new InstantiableImpl(
                         Long.parseLong(parts[0]),
-                        Long.parseLong(parts[1]) * (long) Math.pow(10, diff)
+                        Long.parseLong(parts[1]) * numberTen.pow(diff).longValueExact()
                 );
             }
-            catch (final NumberFormatException e) {
+            catch (final NumberFormatException | ArithmeticException e) {
                 mutableInstantiable = instantiableStub;
             }
 
