@@ -46,50 +46,40 @@
 package com.teragrep.cfe_16.event.time.candidates;
 
 import com.teragrep.cfe_16.event.time.Instantiable;
-import com.teragrep.cfe_16.event.time.InstantiableImpl;
-import com.teragrep.cfe_16.event.time.InstantiableStub;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
 
-import java.util.concurrent.TimeUnit;
+public final class NanosPrecisionCandidateTest {
 
-public final class IntegerCandidate implements HECTimestampCandidate {
-
-    private static final Instantiable instantiableStub = new InstantiableStub();
-
-    public IntegerCandidate() {
-
+    @Test
+    void testInvalidInput() {
+        final HECTimestampCandidate candidate = new NanosPrecisionCandidate();
+        final Instantiable i = candidate.toInstantiable("not a valid time");
+        Assertions.assertTrue(i.isStub());
     }
 
-    @Override
-    public Instantiable toInstantiable(final String timestampString) {
-        Instantiable instantiable;
-        try {
-            final long timestamp = Long.parseLong(timestampString);
-            final int len = timestampString.length();
-            if (len == 10) {
-                instantiable = new InstantiableImpl(timestamp, 0);
-            }
-            else if (len == 13) {
-                instantiable = new InstantiableImpl(timestamp);
-            }
-            else if (len == 16) {
-                final long seconds = TimeUnit.MICROSECONDS.toSeconds(timestamp);
-                final long nanosRemaining = TimeUnit.MICROSECONDS.toNanos(timestamp)
-                        - TimeUnit.SECONDS.toNanos(seconds);
-                instantiable = new InstantiableImpl(seconds, nanosRemaining);
-            }
-            else if (len == 19) {
-                final long seconds = TimeUnit.NANOSECONDS.toSeconds(timestamp);
-                final long nanosRemaining = timestamp - TimeUnit.SECONDS.toNanos(seconds);
-                instantiable = new InstantiableImpl(seconds, nanosRemaining);
-            }
-            else {
-                instantiable = instantiableStub;
-            }
-        }
-        catch (final NumberFormatException e) {
-            instantiable = instantiableStub;
-        }
+    @Test
+    void test19Digits() {
+        final HECTimestampCandidate candidate = new NanosPrecisionCandidate();
+        final Instantiable i = candidate.toInstantiable("1234567899999999999");
+        Assertions.assertFalse(i.isStub());
+        Assertions.assertEquals(1234567899999L, i.toInstant().toEpochMilli());
+        Assertions.assertEquals(999999999, i.toInstant().getNano());
+    }
 
-        return instantiable;
+    @Test
+    void testMoreDigits() {
+        final HECTimestampCandidate candidate = new NanosPrecisionCandidate();
+        final Instantiable i = candidate.toInstantiable("1234567899999999999123");
+        Assertions.assertTrue(i.isStub());
+        Assertions.assertThrows(UnsupportedOperationException.class, i::toInstant);
+    }
+
+    @Test
+    void testLessDigits() {
+        final HECTimestampCandidate candidate = new NanosPrecisionCandidate();
+        final Instantiable i = candidate.toInstantiable("123456789999");
+        Assertions.assertTrue(i.isStub());
+        Assertions.assertThrows(UnsupportedOperationException.class, i::toInstant);
     }
 }

@@ -57,7 +57,14 @@ public final class HECTimestampCandidateImpl implements HECTimestampCandidate {
     private final List<HECTimestampCandidate> candidates;
 
     public HECTimestampCandidateImpl() {
-        this(List.of(new DecimalCandidate(), new PeriodSuffixCandidate(), new IntegerCandidate()));
+        this(
+                List
+                        .of(
+                                new DecimalCandidate(), new PeriodSuffixCandidate(), new SecondsPrecisionCandidate(),
+                                new MicrosPrecisionCandidate(), new MillisPrecisionCandidate(),
+                                new NanosPrecisionCandidate()
+                        )
+        );
     }
 
     private HECTimestampCandidateImpl(final List<HECTimestampCandidate> candidates) {

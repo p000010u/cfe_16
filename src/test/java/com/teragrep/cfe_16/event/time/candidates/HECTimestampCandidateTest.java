@@ -56,6 +56,7 @@ public final class HECTimestampCandidateTest {
         final HECTimestampCandidate candidates = new HECTimestampCandidateImpl();
         final Instantiable i = candidates.toInstantiable("not a valid time");
         Assertions.assertTrue(i.isStub());
+        Assertions.assertThrows(UnsupportedOperationException.class, i::toInstant);
     }
 
     @Test
@@ -99,6 +100,7 @@ public final class HECTimestampCandidateTest {
         final HECTimestampCandidate candidates = new HECTimestampCandidateImpl();
         final Instantiable i = candidates.toInstantiable("12345678999999999999999");
         Assertions.assertTrue(i.isStub());
+        Assertions.assertThrows(UnsupportedOperationException.class, i::toInstant);
     }
 
     @Test
@@ -196,5 +198,6 @@ public final class HECTimestampCandidateTest {
         final HECTimestampCandidate candidates = new HECTimestampCandidateImpl();
         final Instantiable i = candidates.toInstantiable("1433188255.1234567890");
         Assertions.assertTrue(i.isStub());
+        Assertions.assertThrows(UnsupportedOperationException.class, i::toInstant);
     }
 }
