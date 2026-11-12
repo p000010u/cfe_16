@@ -51,18 +51,18 @@ import com.teragrep.cfe_16.server.TestServer;
 import com.teragrep.cfe_16.server.TestServerFactory;
 import com.teragrep.cfe_16.service.HECService;
 
+import java.io.ByteArrayInputStream;
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
+import com.teragrep.rlo_06.RFC5424Frame;
+import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -126,7 +126,7 @@ public class SendSingleEventIT {
     }
 
     @Test
-    public void send1EventTest() {
+    public void test_1_Send1Event() {
         final Response supposedResponse = new AcknowledgedJsonResponse("Success", 0);
         Assertions
                 .assertEquals(supposedResponse, service.sendEvents(request1, channel1, eventInJson), "Service should return JSON object with fields 'text', 'code' and 'ackID' (ackID " + "should be " + 0 + ")");
@@ -136,7 +136,7 @@ public class SendSingleEventIT {
     }
 
     @Test
-    public void sendNDJSONEventTest() {
+    public void test_2_NDJSONEvent() {
         final String eventJson = """
                 {
                   "time": "1791298774.324591",
@@ -258,7 +258,7 @@ public class SendSingleEventIT {
                 """;
         final Response supposedResponse = new AcknowledgedJsonResponse("Success", 1);
         Assertions
-                .assertEquals(supposedResponse, service.sendEvents(request1, channel1, eventJson), "Service should return JSON object with fields 'text', 'code' and 'ackID' (ackID " + "should be " + 0 + ")");
+                .assertEquals(supposedResponse, service.sendEvents(request1, channel1, eventJson), "Service should return JSON object with fields 'text', 'code' and 'ackID' (ackID " + "should be " + 1 + ")");
 
         Assertions
                 .assertEquals(9, messageList.size(), "Number of events received should match the number of sent ones");
@@ -346,5 +346,156 @@ public class SendSingleEventIT {
         Assertions.assertEquals("reported", matcher9.group("source"));
         Assertions.assertEquals("true", matcher9.group("parsed"));
         Assertions.assertEquals("false", matcher9.group("generated"));
+    }
+
+    @Test
+    public void test_3_EventSyslogConversion() {
+        final String eventJson = """
+                {
+                  "time": "1791298774.324591",
+                  "source": "testi-event1",
+                  "event": {
+                    "stream": "TEST_STREAM1",
+                    "time": "2026-10-06T14:59:34.125899443Z",
+                    "log": {
+                      "timestamp": "2026-10-06T14:59:34.125Z",
+                      "message": "{\\"appName\\":\\"APP1\\"}"
+                    },
+                    "host": "testi.1.lan"
+                  }
+                }
+                {
+                  "time": 1791298774.32559,
+                  "source": "testi-event2",
+                  "event": {
+                    "stream": "TEST_STREAM2",
+                    "time": "2026-10-06T14:59:34.125899443Z",
+                    "log": {
+                      "timestamp": "2026-10-06T14:59:34.125Z",
+                      "message": "{\\"appName\\":\\"APP2\\"}"
+                    },
+                    "host": "testi.2.lan"
+                  }
+                }
+                {
+                  "time": 1791298774.3269,
+                  "source": "testi-event3",
+                  "event": {
+                    "stream": "TEST_STREAM3",
+                    "time": "2026-10-06T14:59:34.125899443Z",
+                    "log": {
+                      "timestamp": "2026-10-06T14:59:34.125Z",
+                      "message": "{\\"appName\\":\\"APP1\\"}"
+                    },
+                    "host": "testi.3.lan"
+                  }
+                }
+                {
+                  "time": 1791298774.327,
+                  "source": "testi-event4",
+                  "event": {
+                    "stream": "TEST_STREAM4",
+                    "time": "2026-10-06T14:59:34.125899443Z",
+                    "log": {
+                      "timestamp": "2026-10-06T14:59:34.125Z",
+                      "message": "{\\"appName\\":\\"APP4\\"}"
+                    },
+                    "host": "testi.4.lan"
+                  }
+                }
+                {
+                  "time": 1791298774328,
+                  "source": "testi-event5",
+                  "event": {
+                    "stream": "TEST_STREAM5",
+                    "time": "2026-10-06T14:59:34.125899443Z",
+                    "log": {
+                      "timestamp": "2026-10-06T14:59:34.125Z",
+                      "message": "{\\"appName\\":\\"APP5\\"}"
+                    },
+                    "host": "testi.5.lan"
+                  }
+                }
+                {
+                  "time": 1791298774.32,
+                  "source": "testi-event6",
+                  "event": {
+                    "stream": "TEST_STREAM6",
+                    "time": "2026-10-06T14:59:34.125899443Z",
+                    "log": {
+                      "timestamp": "2026-10-06T14:59:34.125Z",
+                      "message": "{\\"appName\\":\\"APP6\\"}"
+                    },
+                    "host": "testi.6.lan"
+                  }
+                }
+                {
+                  "time": 1791298774.4,
+                  "source": "testi-event7",
+                  "event": {
+                    "stream": "TEST_STREAM7",
+                    "time": "2026-10-06T14:59:34.125899443Z",
+                    "log": {
+                      "timestamp": "2026-10-06T14:59:34.125Z",
+                      "message": "{\\"appName\\":\\"APP7\\"}"
+                    },
+                    "host": "testi.7.lan"
+                  }
+                }
+                {
+                  "time": "1791298774.",
+                  "source": "testi-event8",
+                  "event": {
+                    "stream": "TEST_STREAM8",
+                    "time": "2026-10-06T14:59:34.125899443Z",
+                    "log": {
+                      "timestamp": "2026-10-06T14:59:34.125Z",
+                      "message": "{\\"appName\\":\\"APP8\\"}"
+                    },
+                    "host": "testi.8.lan"
+                  }
+                }
+                {
+                  "time": "1791298774123456789",
+                  "source": "testi-event9",
+                  "event": {
+                    "stream": "TEST_STREAM9",
+                    "time": "2026-10-06T14:59:34.125899443Z",
+                    "log": {
+                      "timestamp": "2026-10-06T14:59:34.125Z",
+                      "message": "{\\"appName\\":\\"APP9\\"}"
+                    },
+                    "host": "testi.9.lan"
+                  }
+                }
+                """;
+        final Response supposedResponse = new AcknowledgedJsonResponse("Success", 2);
+        Assertions
+                .assertEquals(supposedResponse, service.sendEvents(request1, channel1, eventJson), "Service should return JSON object with fields 'text', 'code' and 'ackID' (ackID " + "should be " + 2 + ")");
+
+        Assertions
+                .assertEquals(9, messageList.size(), "Number of events received should match the number of sent ones");
+
+        final RFC5424Frame frame = new RFC5424Frame(true);
+        final List<String> timestamps = new ArrayList<>(messageList.size());
+        int executedLoops = 0;
+        while (!messageList.isEmpty()) {
+            frame.load(new ByteArrayInputStream(messageList.pop()));
+            Assertions.assertTrue(frame.next());
+            timestamps.add(frame.timestamp.toString());
+            executedLoops++;
+        }
+
+        Assertions.assertEquals(9, executedLoops);
+        Assertions.assertEquals(9, timestamps.size());
+        Assertions.assertEquals(1791298774324L, Instant.parse(timestamps.get(0)).toEpochMilli());
+        Assertions.assertEquals(1791298774325L, Instant.parse(timestamps.get(1)).toEpochMilli());
+        Assertions.assertEquals(1791298774326L, Instant.parse(timestamps.get(2)).toEpochMilli());
+        Assertions.assertEquals(1791298774327L, Instant.parse(timestamps.get(3)).toEpochMilli());
+        Assertions.assertEquals(1791298774328L, Instant.parse(timestamps.get(4)).toEpochMilli());
+        Assertions.assertEquals(1791298774320L, Instant.parse(timestamps.get(5)).toEpochMilli());
+        Assertions.assertEquals(1791298774400L, Instant.parse(timestamps.get(6)).toEpochMilli());
+        Assertions.assertEquals(1791298774000L, Instant.parse(timestamps.get(7)).toEpochMilli());
+        Assertions.assertEquals(1791298774123L, Instant.parse(timestamps.get(8)).toEpochMilli());
     }
 }
